@@ -9,6 +9,24 @@ enum class CodigoHttp(val codigo: Int) {
   NOT_IMPLEMENTED(501),
   NOT_FOUND(404),
 }
+class Pedido(val ip: String, val url: String, val fechaHora: LocalDateTime){
+  fun usaProtocoloHttp(): Boolean {
+    return url.startsWith("http:", true)
+  }
 
-class Pedido(val ip: String, val url: String, val fechaHora: LocalDateTime)
+}
+
 class Respuesta(val codigo: CodigoHttp, val body: String, val tiempo: Int, val pedido: Pedido)
+
+class ServidorWeb(){
+
+  fun recibirPedido(pedido: Pedido) : Respuesta{
+    if (pedido.usaProtocoloHttp()){
+      return Respuesta(CodigoHttp.OK,"pedido recibido",15,pedido)
+    }
+    else {
+      return Respuesta(CodigoHttp.NOT_IMPLEMENTED,"",10,pedido)
+    }
+
+  }
+}
