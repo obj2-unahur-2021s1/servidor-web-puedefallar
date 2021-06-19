@@ -13,6 +13,7 @@ class Pedido(val ip: String, val url: String, val fechaHora: LocalDateTime){
   fun usaProtocoloHttp(): Boolean {
     return url.startsWith("http:", true)
   }
+  fun extension() : String = this.url.split(".").last()
 
 }
 
@@ -20,13 +21,20 @@ class Respuesta(val codigo: CodigoHttp, val body: String, val tiempo: Int, val p
 
 class ServidorWeb(){
 
+  val modulos = mutableListOf<Modulo>()
+
   fun recibirPedido(pedido: Pedido) : Respuesta{
-    if (pedido.usaProtocoloHttp()){
-      return Respuesta(CodigoHttp.OK,"pedido recibido",15,pedido)
-    }
-    else {
+    if (!pedido.usaProtocoloHttp()){
       return Respuesta(CodigoHttp.NOT_IMPLEMENTED,"",10,pedido)
     }
+    else if (modulos.any{it.aceptaPedido(pedido)}) {
+      val modulo = modulos.find{it.aceptaPedido(pedido)}
+      return Respuesta(CodigoHttp.OK, modulo?.body!!,modulo.tiempo,pedido)
+    }
+    else {
+      return Respuesta(CodigoHttp.NOT_FOUND,"",10,pedido)
+    }
+
 
   }
 }
