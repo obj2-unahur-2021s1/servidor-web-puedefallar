@@ -5,6 +5,7 @@ import io.kotest.matchers.maps.shouldBeEmpty
 import io.kotest.matchers.maps.shouldContain
 import io.kotest.matchers.shouldBe
 import java.time.LocalDateTime
+import io.kotest.matchers.collections.shouldContainExactly
 
 class ServidorWebTest : DescribeSpec({
   describe("Un servidor web") {
@@ -53,6 +54,21 @@ class ServidorWebTest : DescribeSpec({
       analizadorDemora.respuestasDemoradasPorModulo(moduloVideo).shouldBe(1)
       analizadorDemora.respuestasDemoradasPorModulo(moduloTexto).shouldBe(0)
       analizadorDemora.respuestasDemoradasPorModulo(moduloImagen).shouldBe(0)
+    }
+    it("Ip sospechosas"){
+      val analizadorIpSospechosa1 = AnalizadorIpSospechosa()
+      servidor1.analizadores.add(analizadorIpSospechosa1)
+      servidor1.recibirPedido(pedido1)
+
+      analizadorIpSospechosa1.ipSospechosas.add("192.168.10.1")
+      analizadorIpSospechosa1.ipSospechosas.add("192.168.10.9")
+
+      analizadorIpSospechosa1.cantidadPedidosRealizadosPor("192.168.10.1").shouldBe(1)
+      analizadorIpSospechosa1.cantidadPedidosRealizadosPor("192.168.10.9").shouldBe(0)
+
+      analizadorIpSospechosa1.ipSospechosasQueRequirieron("/google.com.ar/documentos/doc1.doc").shouldContainExactly("192.168.10.1")
+
+
     }
 
   }
