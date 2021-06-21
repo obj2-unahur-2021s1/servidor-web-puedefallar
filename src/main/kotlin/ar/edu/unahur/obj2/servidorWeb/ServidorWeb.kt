@@ -22,19 +22,25 @@ class Respuesta(val codigo: CodigoHttp, val body: String, val tiempo: Int, val p
 class ServidorWeb(){
 
   val modulos = mutableListOf<Modulo>()
+  val analizadores = mutableListOf<Analizador>()
+
+  fun hayModuloParaPedido(pedido: Pedido) = modulos.any{it.aceptaPedido(pedido)}
+
+  fun enviarRespuestaAAnalizadores(respuesta: Respuesta, modulo: Modulo) = analizadores.forEach{it.respuestas.put(respuesta,modulo)}
 
   fun recibirPedido(pedido: Pedido) : Respuesta{
+    val respuesta : Respuesta
     if (!pedido.usaProtocoloHttp()){
-      return Respuesta(CodigoHttp.NOT_IMPLEMENTED,"",10,pedido)
+      respuesta = Respuesta(CodigoHttp.NOT_IMPLEMENTED,"",10,pedido)
     }
-    else if (modulos.any{it.aceptaPedido(pedido)}) {
+    else if (hayModuloParaPedido(pedido)) {
       val modulo = modulos.find{it.aceptaPedido(pedido)}
-      return Respuesta(CodigoHttp.OK, modulo?.body!!,modulo.tiempo,pedido)
+      respuesta = Respuesta(CodigoHttp.OK, modulo?.body!!,modulo.tiempo,pedido)
+      enviarRespuestaAAnalizadores(respuesta, modulo)
     }
     else {
-      return Respuesta(CodigoHttp.NOT_FOUND,"",10,pedido)
+      respuesta = Respuesta(CodigoHttp.NOT_FOUND,"",10,pedido)
     }
-
-
+    return respuesta
   }
 }

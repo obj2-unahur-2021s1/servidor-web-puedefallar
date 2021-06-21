@@ -1,6 +1,8 @@
 package ar.edu.unahur.obj2.servidorWeb
 
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.maps.shouldBeEmpty
+import io.kotest.matchers.maps.shouldContain
 import io.kotest.matchers.shouldBe
 import java.time.LocalDateTime
 
@@ -40,6 +42,18 @@ class ServidorWebTest : DescribeSpec({
       respuesta4.tiempo.shouldBe(10)
     }
 
+    it("Analizador de demora") {
+      val analizadorDemora = AnalizadorDemora(3)
+      val pedido4 = Pedido("192.168.100.3", "http://videoCoreoFinal.mp4", LocalDateTime.of(2019,10,1,22,10,0) )
+
+      servidor1.analizadores.add(analizadorDemora)
+      servidor1.recibirPedido(pedido4) //pedido recibido por modulo video
+      servidor1.recibirPedido(pedido1) //pedido recibido por modulo texto
+
+      analizadorDemora.respuestasDemoradasPorModulo(moduloVideo).shouldBe(1)
+      analizadorDemora.respuestasDemoradasPorModulo(moduloTexto).shouldBe(0)
+      analizadorDemora.respuestasDemoradasPorModulo(moduloImagen).shouldBe(0)
+    }
 
   }
 })
