@@ -71,6 +71,24 @@ class ServidorWebTest : DescribeSpec({
 
     }
 
+    it("Analizador de estadisticas"){
+      val pedido4 = Pedido("192.168.100.3", "http://videoCoreoFinal.mp4", LocalDateTime.of(2019,10,1,22,10,0) )
+      val analizadorEstadistica1 = AnalizadorDeEstadistica()
+      servidor1.analizadores.add(analizadorEstadistica1)
+      servidor1.recibirPedido(pedido1)
+      servidor1.recibirPedido(pedido4)
+
+      analizadorEstadistica1.tiempoDeRespuestaPromedio().shouldBe(3)
+
+      analizadorEstadistica1.pedidosEntreFechas(LocalDateTime.of(2019,1,1,0,0,0)
+        ,LocalDateTime.of(2020,10,9,22,10,0)).shouldBe(1)
+
+      analizadorEstadistica1.respuestasConStringIncluido("Videito").shouldBe(1)
+
+      analizadorEstadistica1.porcentajeRespuestasExitosas().shouldBe(100)
+
+    }
+
   }
 })
 
