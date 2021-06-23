@@ -66,7 +66,7 @@ class ServidorWebTest : DescribeSpec({
       analizadorIpSospechosa1.cantidadPedidosRealizadosPor("192.168.10.1").shouldBe(1)
       analizadorIpSospechosa1.cantidadPedidosRealizadosPor("192.168.10.9").shouldBe(0)
 
-      analizadorIpSospechosa1.ipSospechosasQueRequirieron("/google.com.ar/documentos/doc1.doc").shouldContainExactly("192.168.10.1")
+      analizadorIpSospechosa1.ipSospechosasQueRequirieron("google.com.ar/documentos/doc1.doc").shouldContainExactly("192.168.10.1")
 
 
     }
@@ -75,21 +75,25 @@ class ServidorWebTest : DescribeSpec({
       val pedido4 = Pedido("192.168.100.3", "http://videoCoreoFinal.mp4", LocalDateTime.of(2019,10,1,22,10,0) )
       val analizadorEstadistica1 = AnalizadorDeEstadistica()
       servidor1.analizadores.add(analizadorEstadistica1)
-      servidor1.recibirPedido(pedido1)
-      servidor1.recibirPedido(pedido4)
+      servidor1.recibirPedido(pedido1) //ok
+      servidor1.recibirPedido(pedido3) // not_found
+      servidor1.recibirPedido(pedido4) // ok
 
-      analizadorEstadistica1.tiempoDeRespuestaPromedio().shouldBe(3)
+      analizadorEstadistica1.tiempoDeRespuestaPromedio().shouldBe(5)
 
       analizadorEstadistica1.pedidosEntreFechas(LocalDateTime.of(2019,1,1,0,0,0)
-        ,LocalDateTime.of(2020,10,9,22,10,0)).shouldBe(1)
+        ,LocalDateTime.of(2020,10,9,22,10,0)).shouldBe(2)
 
       analizadorEstadistica1.respuestasConStringIncluido("Videito").shouldBe(1)
 
-      analizadorEstadistica1.porcentajeRespuestasExitosas().shouldBe(100)
+      analizadorEstadistica1.cantidadRespuestasExitosas().shouldBe(2)
+      analizadorEstadistica1.listaRespuestas.size.shouldBe(3)
+      analizadorEstadistica1.porcentajeRespuestasExitosas().shouldBe(66)
 
     }
 
   }
 })
+
 
 

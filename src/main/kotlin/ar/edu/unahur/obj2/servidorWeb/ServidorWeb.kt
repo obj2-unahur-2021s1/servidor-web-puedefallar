@@ -10,11 +10,12 @@ enum class CodigoHttp(val codigo: Int) {
   NOT_FOUND(404),
 }
 class Pedido(val ip: String, val url: String, val fechaHora: LocalDateTime){
-  fun usaProtocoloHttp(): Boolean {
-    return url.startsWith("http:", true)
-  }
-  fun extension() : String = this.url.split(".").last()
 
+  fun usaProtocoloHttp(): Boolean = url.startsWith("http:", true)
+
+  fun extension() : String = url.substringAfterLast(".")
+
+  fun ruta() :String = url.substringAfter("//") //revisar
 }
 
 class Respuesta(val codigo: CodigoHttp, val body: String, val tiempo: Int, val pedido: Pedido)
@@ -26,21 +27,25 @@ class ServidorWeb(){
 
   fun hayModuloParaPedido(pedido: Pedido) = modulos.any{it.aceptaPedido(pedido)}
 
-  fun enviarRespuestaAAnalizadores(respuesta: Respuesta, modulo: Modulo) = analizadores.forEach{it.respuestas.put(respuesta,modulo)}
+  fun enviarRespuestaAAnalizadores(respuesta: Respuesta, modulo: Modulo?) = analizadores.forEach{it.respuestasYModulos.put(respuesta,modulo)}
 
   fun recibirPedido(pedido: Pedido) : Respuesta{
     val respuesta : Respuesta
+    val modulo : Modulo?
+
     if (!pedido.usaProtocoloHttp()){
+      modulo = null
       respuesta = Respuesta(CodigoHttp.NOT_IMPLEMENTED,"",10,pedido)
     }
     else if (hayModuloParaPedido(pedido)) {
-      val modulo = modulos.find{it.aceptaPedido(pedido)}
+      modulo = modulos.find{it.aceptaPedido(pedido)}
       respuesta = Respuesta(CodigoHttp.OK, modulo?.body!!,modulo.tiempo,pedido)
-      enviarRespuestaAAnalizadores(respuesta, modulo)
     }
     else {
+      modulo = null
       respuesta = Respuesta(CodigoHttp.NOT_FOUND,"",10,pedido)
     }
+    enviarRespuestaAAnalizadores(respuesta, modulo)
     return respuesta
   }
 }
